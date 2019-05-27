@@ -106,28 +106,28 @@ for _nbacia in nameBacias:
         else:
             #pega os dados do ano em questao
             temptraining = training.filterMetadata('year', 'equals', int(ano))
-            #cria o mosaico a partir do mosaico total, cortando pelo poligono da bacia
-            mosaicMapbiomas = ee.Image(mosaicoTotal.filterMetadata('year', 'equals', int(ano)).filterBounds(PoligonoBacia).mosaic()).clip(PoligonoBacia)
-            #cria o classificador com as especificacoes definidas acima 
-            classifier = ee.Classifier.randomForest(**pmtRF).train(temptraining, 'class', bandNames)
-            #para que na imagem classificada e agrupada cada banda corresponda a um ano
-            #criamos essa variavel e passamos ela na classificacao
-            resl = 'classification_'+ano
-            
-            #classifica
-            classified = mosaicMapbiomas.classify(classifier, resl)
-            #verifica se o ano em questao eh o primeiro ano 
-            condition = ee.Algorithms.IsEqual(ano, primerAno)
-            
-            #se for o primeiro ano cria o dicionario e seta a variavel como
-            #o resultado da primeira imagem classificada
-            if condition.getInfo() == True:
-                #print ('entrou em 1985')
-                imglsClasxanos = classified
-                mydict = {'id_bacia': _nbacia,'version': '2','biome': bioma,'collection': '4','sensor': 'Landsat','ver':2}
-            #se nao, adiciona a imagem como uma banda a imagem que ja existia
-            else:
-                imglsClasxanos = imglsClasxanos.addBands(classified)
+        #cria o mosaico a partir do mosaico total, cortando pelo poligono da bacia
+        mosaicMapbiomas = ee.Image(mosaicoTotal.filterMetadata('year', 'equals', int(ano)).filterBounds(PoligonoBacia).mosaic()).clip(PoligonoBacia)
+        #cria o classificador com as especificacoes definidas acima 
+        classifier = ee.Classifier.randomForest(**pmtRF).train(temptraining, 'class', bandNames)
+        #para que na imagem classificada e agrupada cada banda corresponda a um ano
+        #criamos essa variavel e passamos ela na classificacao
+        resl = 'classification_'+ano
+        
+        #classifica
+        classified = mosaicMapbiomas.classify(classifier, resl)
+        #verifica se o ano em questao eh o primeiro ano 
+        condition = ee.Algorithms.IsEqual(ano, primerAno)
+        
+        #se for o primeiro ano cria o dicionario e seta a variavel como
+        #o resultado da primeira imagem classificada
+        if condition.getInfo() == True:
+            #print ('entrou em 1985')
+            imglsClasxanos = classified
+            mydict = {'id_bacia': _nbacia,'version': '2','biome': bioma,'collection': '4','sensor': 'Landsat','ver':2}
+        #se nao, adiciona a imagem como uma banda a imagem que ja existia
+        else:
+            imglsClasxanos = imglsClasxanos.addBands(classified)
     i+=1
     #seta as propriedades na imagem classificada            
     for pmt in mydict:
